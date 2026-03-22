@@ -131,6 +131,7 @@
 interface BirthProfile {
   id: string
   name?: string
+  label?: string
   gender?: 'male' | 'female'
   calendarType: 'solar' | 'lunar'
   birthDate: string
@@ -201,3 +202,6 @@ interface BaziChartSnapshot {
 4. 实现大运与流运基础模型
 5. 接入输入页与结果页
 6. 最后接 storage、历史记录与偏好设置
+结果页
+6. 最后接 storage、历史记录与偏好设置
+��设置
