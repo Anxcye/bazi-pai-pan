@@ -92,7 +92,8 @@ function buildPillar(
   branchTenGods: string[] | undefined,
   naYin: string | undefined,
   xunKong: string | undefined,
-) : PillarDetail {
+  diShi: string | undefined,
+): PillarDetail {
   const pillar = splitGanzhi(value)
   const emptyBranches = xunKong ? xunKong.split('') : []
   const gods = toTenGodList(branchTenGods)
@@ -104,7 +105,7 @@ function buildPillar(
     hiddenStems: buildHiddenStems(pillar.branch),
     stemTenGod: (stemTenGod as PillarDetail['stemTenGod']) ?? null,
     branchTenGod: (gods[0] as TenGod | undefined) ?? null,
-    mainStar: null,
+    mainStar: diShi ?? null,
     subStars: gods.slice(1),
     naYin: naYin ?? null,
     emptyBranches,
@@ -152,46 +153,12 @@ export function calculateBaziChart(profile: BirthProfileDraft, _config: PaipanRu
   const lunar = getLunar(profile)
   const ec = lunar.getEightChar()
 
-  const year = buildPillar(
-    'year',
-    '年柱',
-    ec.getYear(),
-    ec.getYearShiShenGan?.() ?? null,
-    ec.getYearShiShenZhi?.(),
-    ec.getYearNaYin?.(),
-    ec.getYearXunKong?.(),
-  )
-  const month = buildPillar(
-    'month',
-    '月柱',
-    ec.getMonth(),
-    ec.getMonthShiShenGan?.() ?? null,
-    ec.getMonthShiShenZhi?.(),
-    ec.getMonthNaYin?.(),
-    ec.getMonthXunKong?.(),
-  )
-  const day = buildPillar(
-    'day',
-    '日柱',
-    ec.getDay(),
-    ec.getDayShiShenGan?.() ?? '日主',
-    ec.getDayShiShenZhi?.(),
-    ec.getDayNaYin?.(),
-    ec.getDayXunKong?.(),
-  )
-  const hour = buildPillar(
-    'hour',
-    '时柱',
-    ec.getTime(),
-    ec.getTimeShiShenGan?.() ?? null,
-    ec.getTimeShiShenZhi?.(),
-    ec.getTimeNaYin?.(),
-    ec.getTimeXunKong?.(),
-  )
+  const year = buildPillar('year', '年柱', ec.getYear(), ec.getYearShiShenGan?.() ?? null, ec.getYearShiShenZhi?.(), ec.getYearNaYin?.(), ec.getYearXunKong?.(), ec.getYearDiShi?.())
+  const month = buildPillar('month', '月柱', ec.getMonth(), ec.getMonthShiShenGan?.() ?? null, ec.getMonthShiShenZhi?.(), ec.getMonthNaYin?.(), ec.getMonthXunKong?.(), ec.getMonthDiShi?.())
+  const day = buildPillar('day', '日柱', ec.getDay(), ec.getDayShiShenGan?.() ?? '日主', ec.getDayShiShenZhi?.(), ec.getDayNaYin?.(), ec.getDayXunKong?.(), ec.getDayDiShi?.())
+  const hour = buildPillar('hour', '时柱', ec.getTime(), ec.getTimeShiShenGan?.() ?? null, ec.getTimeShiShenZhi?.(), ec.getTimeNaYin?.(), ec.getTimeXunKong?.(), ec.getTimeDiShi?.())
 
-  if (!profile.birthTime) {
-    hour.status = 'unknown'
-  }
+  if (!profile.birthTime) hour.status = 'unknown'
 
   const yun = ec.getYun?.(profile.gender === 'male' ? 1 : 0)
   const daYun = yun?.getDaYun?.(8) ?? []
@@ -231,7 +198,15 @@ export function calculateBaziChart(profile: BirthProfileDraft, _config: PaipanRu
     dayMaster: day.pillar?.stem ?? null,
     pillars: { year, month, day, hour },
     fiveElements: { wood: null, fire: null, earth: null, metal: null, water: null },
-    professionPanel: { primaryStars: [], secondaryStars: [], deityMarkers: [] },
+    professionPanel: {
+      primaryStars: [
+        { name: '胎元', value: ec.getTaiYuan?.() ?? null, status: 'ready' },
+        { name: '命宫', value: ec.getMingGong?.() ?? null, status: 'ready' },
+        { name: '身宫', value: ec.getShenGong?.() ?? null, status: 'ready' },
+      ],
+      secondaryStars: [],
+      deityMarkers: [],
+    },
     dayun,
     liunian,
     liuyue,
@@ -240,12 +215,12 @@ export function calculateBaziChart(profile: BirthProfileDraft, _config: PaipanRu
     relations,
     highlights: [
       '已接入第一版真实四柱计算入口。',
-      '当前已接入纳音、旬空、地支十神、基础大运和首组流年。',
+      '当前已接入纳音、旬空、地支十神、十二长生、基础大运和首组流年。',
     ],
     summary: {
       status: 'partial',
       title: '已生成四柱与基础流运',
-      message: '四柱、藏干、纳音、空亡、基础大运与首组流年已接入；更完整的流月、流日、流时与关系规则继续补。',
+      message: '四柱、藏干、纳音、空亡、十二长生、基础大运与首组流年已接入；更完整的流月、流日、流时与关系规则继续补。',
       completeness: [
         { label: '四柱计算', ready: true },
         { label: '天干十神', ready: true },
