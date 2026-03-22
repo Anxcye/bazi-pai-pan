@@ -15,10 +15,11 @@ import { toBirthProfileDraft, type BirthInfoFormValues } from './model.ts'
 
 interface BirthInfoFormSectionProps {
   defaultValue: BirthInfoFormValues
+  onSubmit?: (values: BirthInfoFormValues) => void
 }
 
-export function BirthInfoFormSection({ defaultValue }: BirthInfoFormSectionProps) {
-  const { control, register } = useForm<BirthInfoFormValues>({
+export function BirthInfoFormSection({ defaultValue, onSubmit }: BirthInfoFormSectionProps) {
+  const { control, register, handleSubmit } = useForm<BirthInfoFormValues>({
     defaultValues: defaultValue,
   })
 
@@ -41,7 +42,7 @@ export function BirthInfoFormSection({ defaultValue }: BirthInfoFormSectionProps
         </div>
       }
     >
-      <form className="grid gap-5 lg:grid-cols-2">
+      <form className="grid gap-5 lg:grid-cols-2" onSubmit={handleSubmit((formValues) => onSubmit?.(formValues))}>
         <label className="space-y-2">
           <span className="text-sm font-medium text-stone-800 dark:text-stone-200">姓名</span>
           <input
@@ -155,10 +156,10 @@ export function BirthInfoFormSection({ defaultValue }: BirthInfoFormSectionProps
 
         <div className="lg:col-span-2">
           <button
-            type="button"
+            type="submit"
             className="inline-flex items-center rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-white opacity-90 dark:bg-amber-500 dark:text-stone-950"
           >
-            排盘计算入口待接入
+            开始排盘
           </button>
         </div>
       </form>

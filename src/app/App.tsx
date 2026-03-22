@@ -3,16 +3,18 @@
  * 系统位置：app/App.tsx
  * 上游依赖：domain/config/defaults, features/*
  * 下游影响：应用入口
- * 约束：这里只负责页面组装与本地视图切换，不承载排盘计算和持久化逻辑。
+ * 约束：负责页面组装、视图切换与最小可用排盘流程编排。
  */
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { DEFAULT_PAIPAN_RULE_CONFIG } from '../domain/config/defaults.ts'
 import { ChartPreviewSection } from '../features/chart/ChartPreviewSection.tsx'
 import { RuleConfigSection } from '../features/config/RuleConfigSection.tsx'
 import { HistorySection } from '../features/history/HistorySection.tsx'
 import { BirthInfoFormSection } from '../features/input/BirthInfoFormSection.tsx'
+import type { BirthInfoFormValues } from '../features/input/model.ts'
+import { createLiveChart } from './liveState.ts'
 import { defaultBirthFormValues, historyRecords, previewChartResult } from './mockState.ts'
 
 type MainTabKey = 'paipan' | 'result' | 'history' | 'settings'
@@ -26,6 +28,9 @@ const mainTabs: Array<{ key: MainTabKey; label: string }> = [
 
 function App() {
   const [activeMainTab, setActiveMainTab] = useState<MainTabKey>('paipan')
+  const [formValues, setFormValues] = useState<BirthInfoFormValues>(defaultBirthFormValues)
+
+  const liveChart = useMemo(() => createLiveChart(formValues), [formValues])
 
   return (
     <main className="min-h-screen px-4 py-6 text-stone-900 sm:px-6 lg:px-8 lg:py-8 dark:text-stone-100">
@@ -57,18 +62,24 @@ function App() {
         {activeMainTab === 'paipan' ? (
           <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
             <div className="space-y-6">
-              <BirthInfoFormSection defaultValue={defaultBirthFormValues} />
+              <BirthInfoFormSection
+                defaultValue={formValues}
+                onSubmit={(values) => {
+                  setFormValues(values)
+                  setActiveMainTab('result')
+                }}
+              />
             </div>
             <div className="space-y-6">
               <QuickActionCard onGoResult={() => setActiveMainTab('result')} />
-              <ResultSnapshotCard onGoResult={() => setActiveMainTab('result')} />
+              <ResultSnapshotCard onGoResult={() => setActiveMainTab('result')} chartTitle={liveChart.summary.title} />
             </div>
           </div>
         ) : null}
 
         {activeMainTab === 'result' ? (
           <div className="space-y-6">
-            <ChartPreviewSection result={previewChartResult} config={DEFAULT_PAIPAN_RULE_CONFIG} />
+            <ChartPreviewSection result={liveChart ?? previewChartResult} config={DEFAULT_PAIPAN_RULE_CONFIG} />
           </div>
         ) : null}
 
@@ -86,7 +97,7 @@ function QuickActionCard({ onGoResult }: { onGoResult: () => void }) {
       <div className="space-y-3">
         <h2 className="text-xl font-semibold text-stone-950 dark:text-stone-50">先把排盘动作做顺</h2>
         <p className="text-sm leading-7 text-stone-600 dark:text-stone-300">
-          这一页只保留输入和必要提示，让人先完成一次排盘。结果、历史、设置都放到各自 tab，不在首页抢注意力。
+          现在已经接入第一版真实四柱计算入口。提交出生信息后，会直接进入结果页查看排盘结果。
         </p>
       </div>
       <div className="mt-5 flex flex-wrap gap-3">
@@ -95,23 +106,23 @@ function QuickActionCard({ onGoResult }: { onGoResult: () => void }) {
           onClick={onGoResult}
           className="rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-white dark:bg-amber-400 dark:text-stone-950"
         >
-          查看结果页结构
+          查看当前结果
         </button>
         <span className="rounded-full border border-stone-300 px-4 py-3 text-sm text-stone-600 dark:border-white/15 dark:text-stone-300">
-          下一步接“开始排盘”按钮逻辑
+          已接入四柱基础排盘
         </span>
       </div>
     </section>
   )
 }
 
-function ResultSnapshotCard({ onGoResult }: { onGoResult: () => void }) {
+function ResultSnapshotCard({ onGoResult, chartTitle }: { onGoResult: () => void; chartTitle: string }) {
   return (
     <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_24px_70px_-40px_rgba(68,53,35,0.55)] backdrop-blur-sm dark:border-white/10 dark:bg-stone-950/75">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-stone-950 dark:text-stone-50">最近一次结果摘要</h2>
-          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">当前仍是结构预览状态</p>
+          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">{chartTitle}</p>
         </div>
         <button
           type="button"
@@ -122,20 +133,25 @@ function ResultSnapshotCard({ onGoResult }: { onGoResult: () => void }) {
         </button>
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        {previewChartResult.summary.completeness.slice(0, 4).map((item) => (
+        {liveSummaryItems.map((item) => (
           <div
             key={item.label}
             className="rounded-2xl border border-stone-200 bg-stone-50/80 p-4 dark:border-white/10 dark:bg-white/5"
           >
             <div className="text-sm font-medium text-stone-900 dark:text-stone-100">{item.label}</div>
-            <div className="mt-1 text-xs text-stone-500 dark:text-stone-400">
-              {item.ready ? '已接入' : '待接入'}
-            </div>
+            <div className="mt-1 text-xs text-stone-500 dark:text-stone-400">{item.value}</div>
           </div>
         ))}
       </div>
     </section>
   )
 }
+
+const liveSummaryItems = [
+  { label: '四柱', value: '已接入' },
+  { label: '藏干', value: '已接入' },
+  { label: '天干十神', value: '已接入' },
+  { label: '流运', value: '继续开发中' },
+]
 
 export default App
