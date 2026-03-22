@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { Lunar, Solar } from 'lunar-javascript'
 
 import type {
@@ -149,6 +150,56 @@ function toLuckItems(items: Array<{ label: string; value: string; meta?: string 
   return items
 }
 
+function buildCurrentMonthSequence(baseDate: string) {
+  const start = dayjs(baseDate)
+  return toLuckItems(
+    Array.from({ length: 6 }).map((_, index) => {
+      const current = start.add(index, 'month')
+      const solar = Solar.fromYmd(current.year(), current.month() + 1, current.date())
+      return {
+        label: current.format('YYYY-MM'),
+        value: solar.getLunar().getMonthInGanZhi(),
+      }
+    }),
+  )
+}
+
+function buildCurrentDaySequence(baseDate: string) {
+  const start = dayjs(baseDate)
+  return toLuckItems(
+    Array.from({ length: 6 }).map((_, index) => {
+      const current = start.add(index, 'day')
+      const solar = Solar.fromYmd(current.year(), current.month() + 1, current.date())
+      return {
+        label: current.format('MM-DD'),
+        value: solar.getLunar().getDayInGanZhi(),
+      }
+    }),
+  )
+}
+
+function buildCurrentTimeSequence(baseDate: string, baseTime: string | null) {
+  const [hour, minute] = (baseTime ?? '12:00').split(':').map(Number)
+  const start = dayjs(`${baseDate} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`)
+  return toLuckItems(
+    Array.from({ length: 6 }).map((_, index) => {
+      const current = start.add(index * 2, 'hour')
+      const solar = Solar.fromYmdHms(
+        current.year(),
+        current.month() + 1,
+        current.date(),
+        current.hour(),
+        current.minute(),
+        0,
+      )
+      return {
+        label: current.format('HH:mm'),
+        value: solar.getLunar().getTimeInGanZhi(),
+      }
+    }),
+  )
+}
+
 export function calculateBaziChart(profile: BirthProfileDraft, _config: PaipanRuleConfig): BaziChartResult {
   const lunar = getLunar(profile)
   const ec = lunar.getEightChar()
@@ -179,13 +230,9 @@ export function calculateBaziChart(profile: BirthProfileDraft, _config: PaipanRu
     })),
   )
 
-  const currentMonth = lunar.getMonthInGanZhi?.() ?? '—'
-  const currentDay = lunar.getDayInGanZhi?.() ?? '—'
-  const currentTime = lunar.getTimeInGanZhi?.() ?? '—'
-
-  const liuyue = toLuckItems([{ label: '当前流月', value: currentMonth }])
-  const liuri = toLuckItems([{ label: '当前流日', value: currentDay }])
-  const liushi = toLuckItems([{ label: '当前流时', value: currentTime }])
+  const liuyue = buildCurrentMonthSequence(profile.birthDate)
+  const liuri = buildCurrentDaySequence(profile.birthDate)
+  const liushi = buildCurrentTimeSequence(profile.birthDate, profile.birthTime)
 
   const relations = buildRelations([
     year.pillar?.branch ?? '',
