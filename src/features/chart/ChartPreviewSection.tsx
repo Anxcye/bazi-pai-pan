@@ -3,10 +3,10 @@
  * 系统位置：features/chart/ChartPreviewSection.tsx
  * 上游依赖：domain/bazi, domain/config, shared/constants/paipan, shared/ui/SectionCard
  * 下游影响：后续真实结果页、本命盘展示、流运展示
- * 约束：保留主盘 + 下半区专业模块，但避免大段空占位破坏观感。
+ * 约束：主盘之下优先展示流运与干支关系，而不是泛分析卡片。
  */
 
-import type { AuxiliaryStar, BaziChartResult, PillarDetail } from '../../domain/bazi/types.ts'
+import type { BaziChartResult, PillarDetail } from '../../domain/bazi/types.ts'
 import type { PaipanRuleConfig } from '../../domain/config/types.ts'
 import {
   DAY_BOUNDARY_LABELS,
@@ -75,12 +75,30 @@ const rows = [
   },
 ]
 
+const luckColumns = [
+  { key: 'dayun', label: '大运' },
+  { key: 'liunian', label: '流年' },
+  { key: 'liuyue', label: '流月' },
+  { key: 'liuri', label: '流日' },
+  { key: 'liushi', label: '流时' },
+] as const
+
+const relationItems = [
+  { label: '天干关系', value: '—' },
+  { label: '地支关系', value: '—' },
+  { label: '相冲', value: '—' },
+  { label: '相刑', value: '—' },
+  { label: '相合', value: '—' },
+  { label: '相害', value: '—' },
+  { label: '相破', value: '—' },
+]
+
 export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps) {
   const pillars = pillarOrder.map((key) => result.pillars[key])
 
   return (
     <div className="space-y-6">
-      <SectionCard title="排盘结果" description="参考传统排盘软件：上面是四柱主盘，下面接专业信息区。">
+      <SectionCard title="排盘结果" description="参考传统排盘软件：上面是四柱主盘，下面是流运与干支关系区。">
         <div className="space-y-5">
           <div className="overflow-hidden rounded-[20px] border border-stone-300 bg-white shadow-[0_12px_30px_-24px_rgba(68,53,35,0.45)] dark:border-white/15 dark:bg-stone-950">
             <div className="overflow-x-auto">
@@ -152,11 +170,56 @@ export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps
         </div>
       </SectionCard>
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        <InfoPanel title="五行分析" items={buildSimpleList(['木', '火', '土', '金', '水'])} />
-        <InfoPanel title="十神分析" items={buildSimpleList(['比肩', '劫财', '食神', '伤官'])} />
-        <InfoPanel title="排盘信息" items={buildConfigList(config)} />
-        <InfoPanel title="大运信息" items={buildStarList(result.professionPanel.primaryStars)} />
+      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
+          <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">流运</h3>
+          <div className="mt-4 overflow-x-auto">
+            <table className="min-w-full border-collapse text-center">
+              <thead>
+                <tr className="bg-stone-100 dark:bg-white/[0.04]">
+                  {luckColumns.map((column, index) => (
+                    <th
+                      key={column.key}
+                      className={cn(
+                        'border-b border-stone-300 px-4 py-3 text-sm font-medium text-stone-500 dark:border-white/15 dark:text-stone-400',
+                        index !== luckColumns.length - 1 && 'border-r border-stone-300 dark:border-white/15',
+                      )}
+                    >
+                      {column.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {luckColumns.map((column, index) => (
+                    <td
+                      key={column.key}
+                      className={cn(
+                        'px-4 py-5 text-sm text-stone-700 dark:text-stone-200',
+                        index !== luckColumns.length - 1 && 'border-r border-stone-300 dark:border-white/15',
+                      )}
+                    >
+                      —
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
+          <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">干支关系</h3>
+          <div className="mt-4 space-y-3">
+            {relationItems.map((item) => (
+              <div key={item.label} className="flex items-center justify-between gap-4 border-b border-stone-200 pb-2 text-sm last:border-b-0 last:pb-0 dark:border-white/10">
+                <span className="text-stone-500 dark:text-stone-400">{item.label}</span>
+                <span className="font-medium text-stone-800 dark:text-stone-200">{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   )
@@ -168,39 +231,6 @@ function MetaPill({ children }: { children: string }) {
       {children}
     </span>
   )
-}
-
-function InfoPanel({ title, items }: { title: string; items: Array<{ label: string; value: string }> }) {
-  return (
-    <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
-      <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">{title}</h3>
-      <div className="mt-4 space-y-3">
-        {items.map((item) => (
-          <div key={item.label} className="flex items-center justify-between gap-4 border-b border-stone-200 pb-2 text-sm last:border-b-0 last:pb-0 dark:border-white/10">
-            <span className="text-stone-500 dark:text-stone-400">{item.label}</span>
-            <span className="font-medium text-stone-800 dark:text-stone-200">{item.value}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function buildSimpleList(labels: string[]) {
-  return labels.map((label) => ({ label, value: '—' }))
-}
-
-function buildConfigList(config: PaipanRuleConfig) {
-  return [
-    { label: '年界', value: YEAR_BOUNDARY_LABELS[config.yearBoundaryRule] },
-    { label: '月界', value: MONTH_BOUNDARY_LABELS[config.monthBoundaryRule] },
-    { label: '日界', value: DAY_BOUNDARY_LABELS[config.dayBoundaryRule] },
-    { label: '真太阳时', value: config.trueSolarTimeEnabled ? '开启' : '关闭' },
-  ]
-}
-
-function buildStarList(items: AuxiliaryStar[]) {
-  return items.map((item) => ({ label: item.name, value: item.value ?? '—' }))
 }
 
 function formatHiddenStems(pillar: PillarDetail) {
