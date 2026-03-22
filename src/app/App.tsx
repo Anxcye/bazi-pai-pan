@@ -6,16 +6,21 @@
  * 约束：负责页面组装、视图切换与最小可用排盘流程编排。
  */
 
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 
 import { DEFAULT_PAIPAN_RULE_CONFIG } from '../domain/config/defaults.ts'
-import { ChartPreviewSection } from '../features/chart/ChartPreviewSection.tsx'
 import { RuleConfigSection } from '../features/config/RuleConfigSection.tsx'
 import { HistorySection } from '../features/history/HistorySection.tsx'
 import { BirthInfoFormSection } from '../features/input/BirthInfoFormSection.tsx'
 import type { BirthInfoFormValues } from '../features/input/model.ts'
 import { createLiveChart } from './liveState.ts'
-import { defaultBirthFormValues, historyRecords, previewChartResult } from './mockState.ts'
+import { defaultBirthFormValues, historyRecords } from './mockState.ts'
+
+const ChartPreviewSection = lazy(() =>
+  import('../features/chart/ChartPreviewSection.tsx').then((module) => ({
+    default: module.ChartPreviewSection,
+  })),
+)
 
 type MainTabKey = 'paipan' | 'result' | 'history' | 'settings'
 
@@ -39,7 +44,6 @@ function App() {
           <div className="grid gap-2 md:grid-cols-4">
             {mainTabs.map((tab) => {
               const isActive = tab.key === activeMainTab
-
               return (
                 <button
                   key={tab.key}
@@ -79,7 +83,15 @@ function App() {
 
         {activeMainTab === 'result' ? (
           <div className="space-y-6">
-            <ChartPreviewSection result={liveChart ?? previewChartResult} config={DEFAULT_PAIPAN_RULE_CONFIG} />
+            <Suspense
+              fallback={
+                <div className="rounded-[18px] border border-stone-300 bg-white p-5 text-sm text-stone-500 dark:border-white/12 dark:bg-stone-950 dark:text-stone-400">
+                  结果加载中…
+                </div>
+              }
+            >
+              <ChartPreviewSection result={liveChart} config={DEFAULT_PAIPAN_RULE_CONFIG} />
+            </Suspense>
           </div>
         ) : null}
 
@@ -97,7 +109,7 @@ function QuickActionCard({ onGoResult }: { onGoResult: () => void }) {
       <div className="space-y-3">
         <h2 className="text-xl font-semibold text-stone-950 dark:text-stone-50">先把排盘动作做顺</h2>
         <p className="text-sm leading-7 text-stone-600 dark:text-stone-300">
-          现在已经接入第一版真实四柱计算入口。提交出生信息后，会直接进入结果页查看排盘结果。
+          现在已经接入第一版真实四柱计算入口，并开始支持级联流运联动。
         </p>
       </div>
       <div className="mt-5 flex flex-wrap gap-3">
@@ -109,7 +121,7 @@ function QuickActionCard({ onGoResult }: { onGoResult: () => void }) {
           查看当前结果
         </button>
         <span className="rounded-full border border-stone-300 px-4 py-3 text-sm text-stone-600 dark:border-white/15 dark:text-stone-300">
-          已接入四柱基础排盘
+          已接入四柱与级联流运骨架
         </span>
       </div>
     </section>
@@ -150,8 +162,8 @@ function ResultSnapshotCard({ onGoResult, chartTitle }: { onGoResult: () => void
 const liveSummaryItems = [
   { label: '四柱', value: '已接入' },
   { label: '藏干', value: '已接入' },
-  { label: '天干十神', value: '已接入' },
-  { label: '流运', value: '继续开发中' },
+  { label: '十神', value: '已接入' },
+  { label: '级联流运', value: '已接入骨架' },
 ]
 
 export default App
