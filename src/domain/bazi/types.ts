@@ -84,9 +84,24 @@ export interface LuckSequenceItem {
   label: string
   value: string
   meta?: string
+  year?: number
+  month?: number
+  day?: number
+  hour?: number
+  dateKey?: string
+  stem?: HeavenlyStem | null
+  branch?: EarthlyBranch | null
 }
 
-export interface LiuYueItem extends LuckSequenceItem {}
+export interface LiuShiItem extends LuckSequenceItem {}
+
+export interface LiuRiItem extends LuckSequenceItem {
+  liushi?: LiuShiItem[]
+}
+
+export interface LiuYueItem extends LuckSequenceItem {
+  liuri?: LiuRiItem[]
+}
 
 export interface LiuNianNode extends LuckSequenceItem {
   liuyue: LiuYueItem[]

@@ -1,6 +1,14 @@
 import { useMemo, useState } from 'react'
 
-import type { BaziChartResult, DaYunNode, LiuNianNode, LuckSequenceItem, PillarDetail } from '../../domain/bazi/types.ts'
+import type {
+  BaziChartResult,
+  DaYunNode,
+  LiuNianNode,
+  LiuRiItem,
+  LiuShiItem,
+  LiuYueItem,
+  PillarDetail,
+} from '../../domain/bazi/types.ts'
 import type { PaipanRuleConfig } from '../../domain/config/types.ts'
 import { DAY_BOUNDARY_LABELS, MONTH_BOUNDARY_LABELS, YEAR_BOUNDARY_LABELS } from '../../shared/constants/paipan.ts'
 import { cn } from '../../shared/lib/cn.ts'
@@ -28,12 +36,20 @@ export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps
   const pillars = pillarOrder.map((key) => result.pillars[key])
   const [activeDayunIndex, setActiveDayunIndex] = useState(0)
   const [activeLiuNianIndex, setActiveLiuNianIndex] = useState(0)
+  const [activeLiuYueIndex, setActiveLiuYueIndex] = useState(0)
+  const [activeLiuRiIndex, setActiveLiuRiIndex] = useState(0)
 
   const activeDayun: DaYunNode | undefined = result.dayun[activeDayunIndex]
-  const activeLiuNian: LiuNianNode | undefined = activeDayun?.liunian?.[activeLiuNianIndex]
-
   const liunian = useMemo(() => activeDayun?.liunian ?? result.liunian, [activeDayun, result.liunian])
+
+  const activeLiuNian: LiuNianNode | undefined = liunian[activeLiuNianIndex]
   const liuyue = useMemo(() => activeLiuNian?.liuyue ?? result.liuyue, [activeLiuNian, result.liuyue])
+
+  const activeLiuYue: LiuYueItem | undefined = liuyue[activeLiuYueIndex]
+  const liuri = useMemo(() => activeLiuYue?.liuri ?? result.liuri, [activeLiuYue, result.liuri])
+
+  const activeLiuRi: LiuRiItem | undefined = liuri[activeLiuRiIndex]
+  const liushi = useMemo(() => activeLiuRi?.liushi ?? result.liushi, [activeLiuRi, result.liushi])
 
   return (
     <div className="space-y-6">
@@ -78,11 +94,38 @@ export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps
         </div>
       </SectionCard>
 
-      <SelectableLuckRow title="大运" items={result.dayun} activeIndex={activeDayunIndex} onSelect={(index) => { setActiveDayunIndex(index); setActiveLiuNianIndex(0) }} />
-      <SelectableLuckRow title="流年" items={liunian} activeIndex={activeLiuNianIndex} onSelect={setActiveLiuNianIndex} />
-      <StaticLuckRow title="流月" items={liuyue} />
-      <StaticLuckRow title="流日" items={result.liuri} compact />
-      <StaticLuckRow title="流时" items={result.liushi} compact />
+      <SelectableLuckRow
+        title="大运"
+        items={result.dayun}
+        activeIndex={activeDayunIndex}
+        onSelect={(index) => {
+          setActiveDayunIndex(index)
+          setActiveLiuNianIndex(0)
+          setActiveLiuYueIndex(0)
+          setActiveLiuRiIndex(0)
+        }}
+      />
+      <SelectableLuckRow
+        title="流年"
+        items={liunian}
+        activeIndex={activeLiuNianIndex}
+        onSelect={(index) => {
+          setActiveLiuNianIndex(index)
+          setActiveLiuYueIndex(0)
+          setActiveLiuRiIndex(0)
+        }}
+      />
+      <SelectableLuckRow
+        title="流月"
+        items={liuyue}
+        activeIndex={activeLiuYueIndex}
+        onSelect={(index) => {
+          setActiveLiuYueIndex(index)
+          setActiveLiuRiIndex(0)
+        }}
+      />
+      <SelectableLuckRow title="流日" items={liuri} activeIndex={activeLiuRiIndex} onSelect={setActiveLiuRiIndex} dense />
+      <StaticLuckRow title="流时" items={liushi} dense compact />
 
       <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
         <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">干支关系</h3>
@@ -99,17 +142,39 @@ export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps
   )
 }
 
-function SelectableLuckRow({ title, items, activeIndex, onSelect }: { title: string; items: Array<DaYunNode | LiuNianNode>; activeIndex: number; onSelect: (index: number) => void }) {
+function SelectableLuckRow({
+  title,
+  items,
+  activeIndex,
+  onSelect,
+  dense = false,
+}: {
+  title: string
+  items: Array<DaYunNode | LiuNianNode | LiuYueItem | LiuRiItem>
+  activeIndex: number
+  onSelect: (index: number) => void
+  dense?: boolean
+}) {
   return (
     <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
       <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">{title}</h3>
       {items.length === 0 ? <div className="mt-4 text-sm text-stone-500 dark:text-stone-400">暂无{title}</div> : (
-        <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        <div className={cn('mt-4 flex flex-wrap gap-2', dense && 'gap-1.5')}>
           {items.map((item, index) => (
-            <button key={`${item.label}-${index}`} type="button" onClick={() => onSelect(index)} className={cn('rounded-[14px] border px-4 py-4 text-center transition', index === activeIndex ? 'border-amber-400 bg-amber-50 dark:border-amber-400 dark:bg-amber-500/10' : 'border-stone-300 bg-stone-50/70 dark:border-white/15 dark:bg-white/[0.03]')}>
-              <div className="text-xs text-stone-500 dark:text-stone-400">{item.label}</div>
-              <div className="mt-2 text-lg font-semibold text-stone-900 dark:text-stone-100">{item.value}</div>
-              {item.meta ? <div className="mt-1 text-xs text-stone-500 dark:text-stone-400">{item.meta}</div> : null}
+            <button
+              key={`${item.label}-${index}`}
+              type="button"
+              onClick={() => onSelect(index)}
+              className={cn(
+                'rounded-[16px] border px-2.5 py-2 text-center transition',
+                dense ? 'min-w-[52px]' : 'min-w-[68px]',
+                index === activeIndex
+                  ? 'border-amber-400 bg-amber-50 dark:border-amber-400 dark:bg-amber-500/10'
+                  : 'border-stone-300 bg-stone-50/70 dark:border-white/15 dark:bg-white/[0.03]',
+              )}
+            >
+              <LuckTileTop label={item.label} meta={item.meta} />
+              <LuckGanZhi stem={item.stem ?? null} branch={item.branch ?? null} />
             </button>
           ))}
         </div>
@@ -118,22 +183,55 @@ function SelectableLuckRow({ title, items, activeIndex, onSelect }: { title: str
   )
 }
 
-function StaticLuckRow({ title, items, compact = false }: { title: string; items: LuckSequenceItem[]; compact?: boolean }) {
+function StaticLuckRow({
+  title,
+  items,
+  compact = false,
+  dense = false,
+}: {
+  title: string
+  items: LiuShiItem[]
+  compact?: boolean
+  dense?: boolean
+}) {
   return (
     <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
       <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">{title}</h3>
       {items.length === 0 ? <div className="mt-4 text-sm text-stone-500 dark:text-stone-400">暂无{title}</div> : (
-        <div className={cn('mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6', compact && 'xl:grid-cols-4')}>
+        <div className={cn('mt-4 flex flex-wrap gap-2', compact && 'gap-1.5', dense && 'gap-1.5')}>
           {items.map((item, index) => (
-            <div key={`${item.label}-${index}`} className="rounded-[14px] border border-stone-300 bg-stone-50/70 px-4 py-4 text-center dark:border-white/15 dark:bg-white/[0.03]">
-              <div className="text-xs text-stone-500 dark:text-stone-400">{item.label}</div>
-              <div className="mt-2 text-lg font-semibold text-stone-900 dark:text-stone-100">{item.value}</div>
-              {item.meta ? <div className="mt-1 text-xs text-stone-500 dark:text-stone-400">{item.meta}</div> : null}
+            <div
+              key={`${item.label}-${index}`}
+              className={cn(
+                'rounded-[16px] border border-stone-300 bg-stone-50/70 px-2.5 py-2 text-center dark:border-white/15 dark:bg-white/[0.03]',
+                compact ? 'min-w-[52px]' : 'min-w-[68px]',
+              )}
+            >
+              <LuckTileTop label={item.label} meta={item.meta} />
+              <LuckGanZhi stem={item.stem ?? null} branch={item.branch ?? null} />
             </div>
           ))}
         </div>
       )}
     </section>
+  )
+}
+
+function LuckTileTop({ label, meta }: { label: string; meta?: string }) {
+  return (
+    <div className="mb-1 text-[11px] leading-none text-stone-500 dark:text-stone-400">
+      {label}
+      {meta ? <span className="ml-1">{meta}</span> : null}
+    </div>
+  )
+}
+
+function LuckGanZhi({ stem, branch }: { stem: string | null; branch: string | null }) {
+  return (
+    <div className="flex flex-col items-center leading-none text-stone-950 dark:text-stone-50">
+      <span className="text-lg font-semibold">{stem ?? '—'}</span>
+      <span className="mt-1 text-lg font-semibold">{branch ?? '—'}</span>
+    </div>
   )
 }
 
