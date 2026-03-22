@@ -11,11 +11,15 @@ import { ChartPreview } from '../features/chart/ChartPreview'
 
 export function AppShell() {
   return (
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: 24 }}>
-      <h1>八字排盘</h1>
-      <p>先把录入、状态保存和结果预览这条主流程跑通。</p>
-      <BirthInfoForm />
-      <ChartPreview />
+    <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+      <header className="mb-8 text-center">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">八字排盘</h1>
+        <p className="mt-2 text-[var(--text)]">录入出生信息，即时生成八字命盘</p>
+      </header>
+      <div className="space-y-8">
+        <BirthInfoForm />
+        <ChartPreview />
+      </div>
     </main>
   )
 }
