@@ -91,6 +91,17 @@ export interface ProfessionPanel {
   deityMarkers: AuxiliaryStar[]
 }
 
+export interface LuckSequenceItem {
+  label: string
+  value: string
+  meta?: string
+}
+
+export interface BranchRelationItem {
+  label: string
+  value: string
+}
+
 export type FourPillarMap = Record<PillarKey, PillarDetail>
 
 export type FiveElementDistribution = Record<FiveElement, number | null>
@@ -112,6 +123,12 @@ export interface BaziChartResult {
   pillars: FourPillarMap
   fiveElements: FiveElementDistribution
   professionPanel: ProfessionPanel
+  dayun: LuckSequenceItem[]
+  liunian: LuckSequenceItem[]
+  liuyue: LuckSequenceItem[]
+  liuri: LuckSequenceItem[]
+  liushi: LuckSequenceItem[]
+  relations: BranchRelationItem[]
   highlights: string[]
   summary: PaipanResultSummary
 }

@@ -4,7 +4,6 @@
  * 上游依赖：domain/*, features/input/model
  * 下游影响：app/App
  * 约束：只提供结构化示例，不伪造复杂排盘算法输出。
- * 备注：真实计算接入后，应逐步替换这些占位数据。
  */
 
 import type { AuxiliaryStar, BaziChartResult, PillarDetail } from '../domain/bazi/types.ts'
@@ -30,11 +29,7 @@ function createPendingPillar(key: PillarDetail['key'], label: PillarDetail['labe
 }
 
 function createPendingStars(names: string[]): AuxiliaryStar[] {
-  return names.map((name) => ({
-    name,
-    value: null,
-    status: 'pending',
-  }))
+  return names.map((name) => ({ name, value: null, status: 'pending' }))
 }
 
 const previewProfileA: BirthProfile = {
@@ -83,18 +78,26 @@ export const previewChartResult: BaziChartResult = {
     day: createPendingPillar('day', '日柱'),
     hour: createPendingPillar('hour', '时柱'),
   },
-  fiveElements: {
-    wood: null,
-    fire: null,
-    earth: null,
-    metal: null,
-    water: null,
-  },
+  fiveElements: { wood: null, fire: null, earth: null, metal: null, water: null },
   professionPanel: {
     primaryStars: createPendingStars(['主星', '天元坐星', '日主强弱']),
     secondaryStars: createPendingStars(['副星', '地支十神', '纳音']),
     deityMarkers: createPendingStars(['神煞', '空亡', '特殊标记']),
   },
+  dayun: [],
+  liunian: [],
+  liuyue: [],
+  liuri: [],
+  liushi: [],
+  relations: [
+    { label: '天干关系', value: '—' },
+    { label: '地支关系', value: '—' },
+    { label: '相冲', value: '—' },
+    { label: '相刑', value: '—' },
+    { label: '相合', value: '—' },
+    { label: '相害', value: '—' },
+    { label: '相破', value: '—' },
+  ],
   highlights: [
     '四柱、藏干、十神、五行统计已完成领域类型定义，可直接作为算法输出接口。',
     '结果区域当前只消费结构化数据，不依赖组件内部拼装逻辑。',
@@ -109,7 +112,7 @@ export const previewChartResult: BaziChartResult = {
       { label: '四柱计算入口', ready: false },
       { label: '藏干与十神计算', ready: false },
       { label: '主星与副星展示', ready: true },
-      { label: '五行统计', ready: false },
+      { label: '流运结构', ready: true },
       { label: '历史记录存储', ready: false },
     ],
   },
