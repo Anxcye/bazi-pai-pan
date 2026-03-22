@@ -1,12 +1,3 @@
-/**
- * 文件作用：定义八字排盘 v1 所需的核心领域模型。
- * 系统位置：domain/bazi/types.ts
- * 上游依赖：无
- * 下游影响：features/chart, domain/history, 后续 calendar/bazi 计算实现
- * 约束：类型应服务于真实算法接入，避免混入展示文案和组件状态。
- * 备注：当前允许结果字段为 null，用于“结构预览 / 待计算”阶段。
- */
-
 export type HeavenlyStem =
   | '甲'
   | '乙'
@@ -48,9 +39,7 @@ export type TenGod =
   | '正印'
 
 export type PillarKey = 'year' | 'month' | 'day' | 'hour'
-
 export type PillarStatus = 'pending' | 'known' | 'unknown'
-
 export type PaipanResultStatus = 'idle' | 'pending' | 'partial' | 'complete'
 
 export interface GanzhiPillar {
@@ -97,13 +86,22 @@ export interface LuckSequenceItem {
   meta?: string
 }
 
+export interface LiuYueItem extends LuckSequenceItem {}
+
+export interface LiuNianNode extends LuckSequenceItem {
+  liuyue: LiuYueItem[]
+}
+
+export interface DaYunNode extends LuckSequenceItem {
+  liunian: LiuNianNode[]
+}
+
 export interface BranchRelationItem {
   label: string
   value: string
 }
 
 export type FourPillarMap = Record<PillarKey, PillarDetail>
-
 export type FiveElementDistribution = Record<FiveElement, number | null>
 
 export interface PaipanResultSummaryItem {
@@ -123,7 +121,7 @@ export interface BaziChartResult {
   pillars: FourPillarMap
   fiveElements: FiveElementDistribution
   professionPanel: ProfessionPanel
-  dayun: LuckSequenceItem[]
+  dayun: DaYunNode[]
   liunian: LuckSequenceItem[]
   liuyue: LuckSequenceItem[]
   liuri: LuckSequenceItem[]
