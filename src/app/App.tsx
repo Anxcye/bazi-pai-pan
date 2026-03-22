@@ -69,8 +69,6 @@ function App() {
         {activeMainTab === 'result' ? (
           <div className="space-y-6">
             <ChartPreviewSection result={previewChartResult} config={DEFAULT_PAIPAN_RULE_CONFIG} />
-            <LuckOverviewSection />
-            <ResultDetailSection onGoSettings={() => setActiveMainTab('settings')} />
           </div>
         ) : null}
 
@@ -135,70 +133,6 @@ function ResultSnapshotCard({ onGoResult }: { onGoResult: () => void }) {
             </div>
           </div>
         ))}
-      </div>
-    </section>
-  )
-}
-
-function LuckOverviewSection() {
-  const blocks = [
-    { title: '大运', hint: '从起运年龄开始展开十步大运' },
-    { title: '流年', hint: '按年份查看当前运势骨架与干支结果' },
-    { title: '流月 / 流日 / 流时', hint: '适合后续做联动切换与快速查看' },
-  ]
-
-  return (
-    <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_24px_70px_-40px_rgba(68,53,35,0.55)] backdrop-blur-sm dark:border-white/10 dark:bg-stone-950/75">
-      <div className="mb-5 space-y-2">
-        <h2 className="text-xl font-semibold text-stone-950 dark:text-stone-50">流运</h2>
-        <p className="text-sm leading-7 text-stone-600 dark:text-stone-300">
-          结果页顶部先看四柱，流运放在下面展开就够了，不需要再做二级菜单。
-        </p>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-3">
-        {blocks.map((block) => (
-          <article
-            key={block.title}
-            className="rounded-[24px] border border-stone-200 bg-stone-50/80 p-5 dark:border-white/10 dark:bg-white/5"
-          >
-            <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">{block.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-stone-600 dark:text-stone-300">{block.hint}</p>
-            <div className="mt-4 rounded-2xl border border-dashed border-stone-300 px-4 py-3 text-xs text-stone-500 dark:border-white/15 dark:text-stone-400">
-              待接入真实流运结果
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function ResultDetailSection({ onGoSettings }: { onGoSettings: () => void }) {
-  return (
-    <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_24px_70px_-40px_rgba(68,53,35,0.55)] backdrop-blur-sm dark:border-white/10 dark:bg-stone-950/75">
-      <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
-        <article className="rounded-[24px] border border-stone-200 bg-stone-50/80 p-5 dark:border-white/10 dark:bg-white/5">
-          <h3 className="text-lg font-semibold text-stone-950 dark:text-stone-50">输入快照与规则口径</h3>
-          <ul className="mt-4 space-y-3 text-sm text-stone-600 dark:text-stone-300">
-            <li>这里适合展示本次排盘使用的原始出生信息。</li>
-            <li>也适合展示当前采用的年界 / 月界 / 日界规则。</li>
-            <li>后续可以补“时辰未知”或“闰月输入”的特殊标记。</li>
-          </ul>
-        </article>
-
-        <article className="rounded-[24px] border border-stone-200 bg-stone-50/80 p-5 dark:border-white/10 dark:bg-white/5">
-          <h3 className="text-lg font-semibold text-stone-950 dark:text-stone-50">规则配置入口</h3>
-          <p className="mt-3 text-sm leading-7 text-stone-600 dark:text-stone-300">
-            规则配置不用挤在结果顶部，放到单独设置页更清爽。这里保留跳转入口和说明就够了。
-          </p>
-          <button
-            type="button"
-            onClick={onGoSettings}
-            className="mt-5 rounded-full border border-stone-300 px-4 py-2 text-sm text-stone-700 dark:border-white/15 dark:text-stone-200"
-          >
-            去设置页
-          </button>
-        </article>
       </div>
     </section>
   )
