@@ -34,6 +34,7 @@ export interface Pillar {
 
 export interface BaziChart {
   input: BirthInput
+  submittedAt: string
   pillars: {
     year: Pillar
     month: Pillar

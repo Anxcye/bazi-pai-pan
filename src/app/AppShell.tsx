@@ -13,7 +13,7 @@ export function AppShell() {
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: 24 }}>
       <h1>八字排盘</h1>
-      <p>先把输入、排盘入口和结果骨架搭起来。</p>
+      <p>先把录入、状态保存和结果预览这条主流程跑通。</p>
       <BirthInfoForm />
       <ChartPreview />
     </main>

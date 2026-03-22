@@ -1,12 +1,13 @@
 /**
  * 文件作用：出生信息录入表单。
  * 系统位置：src/features/input/BirthInfoForm.tsx
- * 上游依赖：src/types/bazi
+ * 上游依赖：src/types/bazi, src/storage/useBaziStore
  * 下游影响：排盘入口、资料保存
  * 约束：组件只处理交互，不承载排盘算法。
  */
 
 import { useForm } from 'react-hook-form'
+import { useBaziStore } from '../../storage/useBaziStore'
 import type { BirthInput } from '../../types/bazi'
 
 const defaultValues: BirthInput = {
@@ -20,10 +21,18 @@ const defaultValues: BirthInput = {
 }
 
 export function BirthInfoForm() {
-  const { register, handleSubmit } = useForm<BirthInput>({ defaultValues })
+  const latestInput = useBaziStore((state) => state.latestInput)
+  const submitInput = useBaziStore((state) => state.submitInput)
+
+  const { register, handleSubmit } = useForm<BirthInput>({
+    defaultValues: latestInput ?? defaultValues,
+  })
 
   const onSubmit = (values: BirthInput) => {
-    console.log('birth input', values)
+    submitInput({
+      ...values,
+      birthTime: values.birthTime || null,
+    })
   }
 
   return (
@@ -56,6 +65,10 @@ export function BirthInfoForm() {
             <option value="female">女</option>
             <option value="other">其他</option>
           </select>
+        </label>
+        <label>
+          出生地
+          <input {...register('birthPlace')} placeholder="可选" />
         </label>
         <button type="submit">开始排盘</button>
       </form>
