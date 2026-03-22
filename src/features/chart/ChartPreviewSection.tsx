@@ -23,98 +23,104 @@ interface ChartPreviewSectionProps {
 
 const pillarOrder: Array<PillarDetail['key']> = ['year', 'month', 'day', 'hour']
 
+const rows = [
+  {
+    key: 'main-star',
+    label: '主星',
+    render: (pillar: PillarDetail) => pillar.mainStar ?? '—',
+  },
+  {
+    key: 'stem',
+    label: '天干',
+    render: (pillar: PillarDetail) => pillar.pillar?.stem ?? '—',
+    emphasis: 'stem' as const,
+  },
+  {
+    key: 'stem-god',
+    label: '天干十神',
+    render: (pillar: PillarDetail) => pillar.stemTenGod ?? '—',
+  },
+  {
+    key: 'branch',
+    label: '地支',
+    render: (pillar: PillarDetail) => pillar.pillar?.branch ?? '—',
+    emphasis: 'branch' as const,
+  },
+  {
+    key: 'branch-god',
+    label: '地支十神',
+    render: (pillar: PillarDetail) => pillar.branchTenGod ?? '—',
+  },
+  {
+    key: 'hidden-stems',
+    label: '藏干',
+    render: (pillar: PillarDetail) => formatHiddenStems(pillar),
+    multiline: true,
+  },
+  {
+    key: 'sub-stars',
+    label: '副星',
+    render: (pillar: PillarDetail) => (pillar.subStars.length ? pillar.subStars.join(' / ') : '—'),
+    multiline: true,
+  },
+  {
+    key: 'na-yin',
+    label: '纳音',
+    render: (pillar: PillarDetail) => pillar.naYin ?? '—',
+  },
+  {
+    key: 'empty',
+    label: '空亡',
+    render: (pillar: PillarDetail) => (pillar.emptyBranches.length ? pillar.emptyBranches.join(' / ') : '—'),
+  },
+  {
+    key: 'status',
+    label: '状态',
+    render: (pillar: PillarDetail) =>
+      pillar.status === 'known' ? '已就绪' : pillar.status === 'unknown' ? '未知时辰' : '未排盘',
+    subtle: true,
+  },
+]
+
 export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps) {
   const pillars = pillarOrder.map((key) => result.pillars[key])
 
-  const rows = [
-    {
-      key: 'main-star',
-      label: '主星',
-      render: (pillar: PillarDetail) => pillar.mainStar ?? '—',
-    },
-    {
-      key: 'stem',
-      label: '天干',
-      render: (pillar: PillarDetail) => pillar.pillar?.stem ?? '—',
-      emphasis: true,
-    },
-    {
-      key: 'stem-god',
-      label: '天干十神',
-      render: (pillar: PillarDetail) => pillar.stemTenGod ?? '—',
-    },
-    {
-      key: 'branch',
-      label: '地支',
-      render: (pillar: PillarDetail) => pillar.pillar?.branch ?? '—',
-      emphasis: true,
-    },
-    {
-      key: 'branch-god',
-      label: '地支十神',
-      render: (pillar: PillarDetail) => pillar.branchTenGod ?? '—',
-    },
-    {
-      key: 'hidden-stems',
-      label: '藏干',
-      render: (pillar: PillarDetail) => formatHiddenStems(pillar),
-      multiline: true,
-    },
-    {
-      key: 'sub-stars',
-      label: '副星',
-      render: (pillar: PillarDetail) => (pillar.subStars.length ? pillar.subStars.join(' / ') : '—'),
-      multiline: true,
-    },
-    {
-      key: 'na-yin',
-      label: '纳音',
-      render: (pillar: PillarDetail) => pillar.naYin ?? '—',
-    },
-    {
-      key: 'empty',
-      label: '空亡',
-      render: (pillar: PillarDetail) => (pillar.emptyBranches.length ? pillar.emptyBranches.join(' / ') : '—'),
-    },
-    {
-      key: 'status',
-      label: '状态',
-      render: (pillar: PillarDetail) =>
-        pillar.status === 'known' ? '已就绪' : pillar.status === 'unknown' ? '未知时辰' : '未排盘',
-      subtle: true,
-    },
-  ]
-
   return (
-    <SectionCard title="排盘结果" description="按传统排盘软件的读法组织：横向看四柱，纵向看字段。">
+    <SectionCard title="排盘结果" description="参考传统排盘软件：横向看四柱，纵向看字段，减少花哨卡片感。">
       <div className="space-y-4">
-        <div className="overflow-hidden rounded-[24px] border border-stone-300 bg-white dark:border-white/10 dark:bg-stone-950">
+        <div className="overflow-hidden rounded-[20px] border-2 border-stone-300 bg-white shadow-[0_12px_30px_-24px_rgba(68,53,35,0.45)] dark:border-white/15 dark:bg-stone-950">
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse text-center">
               <thead>
                 <tr className="bg-stone-100 dark:bg-white/[0.04]">
-                  <th className="min-w-28 border-b border-r border-stone-200 px-4 py-3 text-sm font-semibold text-stone-500 dark:border-white/10 dark:text-stone-400">
+                  <th className="min-w-28 border-b-2 border-r border-stone-300 px-4 py-3 text-sm font-semibold text-stone-500 dark:border-white/15 dark:text-stone-400">
                     项目
                   </th>
                   {pillars.map((pillar) => (
                     <th
                       key={`${pillar.key}-column`}
                       className={cn(
-                        'min-w-36 border-b border-stone-200 px-5 py-3 text-base font-semibold text-stone-950 dark:border-white/10 dark:text-stone-50',
-                        pillar.key !== 'hour' && 'border-r',
-                        pillar.key !== 'hour' && 'border-stone-200 dark:border-white/10',
-                        pillar.key === 'day' && 'bg-amber-50/80 dark:bg-amber-500/10',
+                        'min-w-36 border-b-2 border-stone-300 px-5 py-3 text-base font-semibold text-stone-950 dark:border-white/15 dark:text-stone-50',
+                        pillar.key !== 'hour' && 'border-r border-stone-300 dark:border-white/15',
+                        pillar.key === 'day' && 'bg-amber-100/70 dark:bg-amber-500/12',
                       )}
                     >
-                      {pillar.label}
+                      <div className="flex flex-col items-center gap-1">
+                        <span>{pillar.label}</span>
+                        {pillar.key === 'day' ? (
+                          <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-medium tracking-[0.12em] text-white dark:bg-amber-400 dark:text-stone-950">
+                            日主
+                          </span>
+                        ) : null}
+                      </div>
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr key={row.key}>
-                    <th className="border-b border-r border-stone-200 bg-stone-50 px-4 py-3 text-sm font-medium text-stone-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-stone-400">
+                {rows.map((row, rowIndex) => (
+                  <tr key={row.key} className={rowIndex % 2 === 0 ? 'bg-white dark:bg-stone-950' : 'bg-stone-50/60 dark:bg-white/[0.02]'}>
+                    <th className="border-b border-r border-stone-300 px-4 py-3 text-sm font-medium text-stone-500 dark:border-white/15 dark:text-stone-400">
                       {row.label}
                     </th>
                     {pillars.map((pillar) => (
@@ -122,9 +128,11 @@ export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps
                         key={`${pillar.key}-${row.key}`}
                         className={cn(
                           'border-b border-stone-200 px-4 py-3 text-sm text-stone-700 dark:border-white/10 dark:text-stone-200',
-                          pillar.key !== 'hour' && 'border-r border-stone-200 dark:border-white/10',
-                          row.emphasis &&
-                            'py-4 text-3xl font-semibold tracking-[0.18em] text-stone-950 dark:text-stone-50',
+                          pillar.key !== 'hour' && 'border-r border-stone-300 dark:border-white/15',
+                          row.emphasis === 'stem' &&
+                            'py-5 text-[2rem] font-semibold leading-none tracking-[0.2em] text-stone-950 dark:text-stone-50',
+                          row.emphasis === 'branch' &&
+                            'py-5 text-[2rem] font-semibold leading-none tracking-[0.2em] text-stone-950 dark:text-stone-50',
                           row.multiline && 'leading-7',
                           row.subtle && 'text-xs text-stone-500 dark:text-stone-400',
                           pillar.key === 'day' && 'bg-amber-50/40 dark:bg-amber-500/[0.06]',
@@ -152,7 +160,9 @@ export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps
 
 function MetaPill({ children }: { children: string }) {
   return (
-    <span className="rounded-full border border-stone-300 px-3 py-1 dark:border-white/15">{children}</span>
+    <span className="rounded-full border border-stone-300 bg-stone-50 px-3 py-1 dark:border-white/15 dark:bg-white/[0.03]">
+      {children}
+    </span>
   )
 }
 
