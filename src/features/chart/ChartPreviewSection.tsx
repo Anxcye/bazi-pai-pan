@@ -3,7 +3,7 @@
  * 系统位置：features/chart/ChartPreviewSection.tsx
  * 上游依赖：domain/bazi, domain/config, shared/constants/paipan, shared/ui/SectionCard
  * 下游影响：后续真实结果页、本命盘展示、流运展示
- * 约束：主盘之下优先展示横向流运带与干支关系。
+ * 约束：主盘之下按行展示大运、流年、流月、流日、流时。
  */
 
 import type { BaziChartResult, PillarDetail } from '../../domain/bazi/types.ts'
@@ -75,13 +75,11 @@ const rows = [
   },
 ]
 
-const dayunItems = ['1步大运', '2步大运', '3步大运', '4步大运', '5步大运', '6步大运']
-const transitItems = [
-  { label: '流年', value: '—' },
-  { label: '流月', value: '—' },
-  { label: '流日', value: '—' },
-  { label: '流时', value: '—' },
-]
+const dayunItems = ['大运1', '大运2', '大运3', '大运4', '大运5', '大运6', '大运7', '大运8']
+const liunianItems = ['流年1', '流年2', '流年3', '流年4', '流年5', '流年6']
+const liuyueItems = ['流月1', '流月2', '流月3', '流月4', '流月5', '流月6']
+const liuriItems = ['流日1', '流日2', '流日3', '流日4', '流日5', '流日6']
+const liushiItems = ['流时1', '流时2', '流时3', '流时4', '流时5', '流时6']
 
 const relationItems = [
   { label: '天干关系', value: '—' },
@@ -98,7 +96,7 @@ export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps
 
   return (
     <div className="space-y-6">
-      <SectionCard title="排盘结果" description="参考传统排盘软件：上面是四柱主盘，下面是横向流运带。">
+      <SectionCard title="排盘结果" description="参考传统排盘软件：上面是四柱主盘，下面按行展示各层流运。">
         <div className="space-y-5">
           <div className="overflow-hidden rounded-[20px] border border-stone-300 bg-white shadow-[0_12px_30px_-24px_rgba(68,53,35,0.45)] dark:border-white/15 dark:bg-stone-950">
             <div className="overflow-x-auto">
@@ -170,50 +168,46 @@ export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps
         </div>
       </SectionCard>
 
+      <LuckRow title="大运" items={dayunItems} />
+      <LuckRow title="流年" items={liunianItems} />
+      <LuckRow title="流月" items={liuyueItems} />
+      <LuckRow title="流日" items={liuriItems} />
+      <LuckRow title="流时" items={liushiItems} />
+
       <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
-        <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">大运</h3>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
-          {dayunItems.map((item) => (
+        <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">干支关系</h3>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {relationItems.map((item) => (
             <div
-              key={item}
-              className="rounded-[14px] border border-stone-300 bg-stone-50/70 px-4 py-4 text-center dark:border-white/15 dark:bg-white/[0.03]"
+              key={item.label}
+              className="rounded-[14px] border border-stone-300 bg-stone-50/70 px-4 py-4 dark:border-white/15 dark:bg-white/[0.03]"
             >
-              <div className="text-xs text-stone-500 dark:text-stone-400">{item}</div>
-              <div className="mt-2 text-lg font-semibold text-stone-900 dark:text-stone-100">—</div>
+              <div className="text-xs text-stone-500 dark:text-stone-400">{item.label}</div>
+              <div className="mt-2 text-base font-semibold text-stone-900 dark:text-stone-100">{item.value}</div>
             </div>
           ))}
         </div>
       </section>
-
-      <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-        <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
-          <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">流年 / 流月 / 流日 / 流时</h3>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {transitItems.map((item) => (
-              <div
-                key={item.label}
-                className="rounded-[14px] border border-stone-300 bg-stone-50/70 px-4 py-4 text-center dark:border-white/15 dark:bg-white/[0.03]"
-              >
-                <div className="text-xs text-stone-500 dark:text-stone-400">{item.label}</div>
-                <div className="mt-2 text-lg font-semibold text-stone-900 dark:text-stone-100">{item.value}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
-          <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">干支关系</h3>
-          <div className="mt-4 space-y-3">
-            {relationItems.map((item) => (
-              <div key={item.label} className="flex items-center justify-between gap-4 border-b border-stone-200 pb-2 text-sm last:border-b-0 last:pb-0 dark:border-white/10">
-                <span className="text-stone-500 dark:text-stone-400">{item.label}</span>
-                <span className="font-medium text-stone-800 dark:text-stone-200">{item.value}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
     </div>
+  )
+}
+
+function LuckRow({ title, items }: { title: string; items: string[] }) {
+  return (
+    <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
+      <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">{title}</h3>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        {items.map((item) => (
+          <div
+            key={item}
+            className="rounded-[14px] border border-stone-300 bg-stone-50/70 px-4 py-4 text-center dark:border-white/15 dark:bg-white/[0.03]"
+          >
+            <div className="text-xs text-stone-500 dark:text-stone-400">{item}</div>
+            <div className="mt-2 text-lg font-semibold text-stone-900 dark:text-stone-100">—</div>
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
 
