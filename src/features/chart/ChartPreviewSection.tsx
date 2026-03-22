@@ -3,7 +3,7 @@
  * 系统位置：features/chart/ChartPreviewSection.tsx
  * 上游依赖：domain/bazi, domain/config, shared/constants/paipan, shared/ui/SectionCard
  * 下游影响：后续真实结果页、本命盘展示、流运展示
- * 约束：主盘之下优先展示流运与干支关系，而不是泛分析卡片。
+ * 约束：主盘之下优先展示横向流运带与干支关系。
  */
 
 import type { BaziChartResult, PillarDetail } from '../../domain/bazi/types.ts'
@@ -75,13 +75,13 @@ const rows = [
   },
 ]
 
-const luckColumns = [
-  { key: 'dayun', label: '大运' },
-  { key: 'liunian', label: '流年' },
-  { key: 'liuyue', label: '流月' },
-  { key: 'liuri', label: '流日' },
-  { key: 'liushi', label: '流时' },
-] as const
+const dayunItems = ['1步大运', '2步大运', '3步大运', '4步大运', '5步大运', '6步大运']
+const transitItems = [
+  { label: '流年', value: '—' },
+  { label: '流月', value: '—' },
+  { label: '流日', value: '—' },
+  { label: '流时', value: '—' },
+]
 
 const relationItems = [
   { label: '天干关系', value: '—' },
@@ -98,7 +98,7 @@ export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps
 
   return (
     <div className="space-y-6">
-      <SectionCard title="排盘结果" description="参考传统排盘软件：上面是四柱主盘，下面是流运与干支关系区。">
+      <SectionCard title="排盘结果" description="参考传统排盘软件：上面是四柱主盘，下面是横向流运带。">
         <div className="space-y-5">
           <div className="overflow-hidden rounded-[20px] border border-stone-300 bg-white shadow-[0_12px_30px_-24px_rgba(68,53,35,0.45)] dark:border-white/15 dark:bg-stone-950">
             <div className="overflow-x-auto">
@@ -170,42 +170,34 @@ export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps
         </div>
       </SectionCard>
 
-      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+      <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
+        <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">大运</h3>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+          {dayunItems.map((item) => (
+            <div
+              key={item}
+              className="rounded-[14px] border border-stone-300 bg-stone-50/70 px-4 py-4 text-center dark:border-white/15 dark:bg-white/[0.03]"
+            >
+              <div className="text-xs text-stone-500 dark:text-stone-400">{item}</div>
+              <div className="mt-2 text-lg font-semibold text-stone-900 dark:text-stone-100">—</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
-          <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">流运</h3>
-          <div className="mt-4 overflow-x-auto">
-            <table className="min-w-full border-collapse text-center">
-              <thead>
-                <tr className="bg-stone-100 dark:bg-white/[0.04]">
-                  {luckColumns.map((column, index) => (
-                    <th
-                      key={column.key}
-                      className={cn(
-                        'border-b border-stone-300 px-4 py-3 text-sm font-medium text-stone-500 dark:border-white/15 dark:text-stone-400',
-                        index !== luckColumns.length - 1 && 'border-r border-stone-300 dark:border-white/15',
-                      )}
-                    >
-                      {column.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  {luckColumns.map((column, index) => (
-                    <td
-                      key={column.key}
-                      className={cn(
-                        'px-4 py-5 text-sm text-stone-700 dark:text-stone-200',
-                        index !== luckColumns.length - 1 && 'border-r border-stone-300 dark:border-white/15',
-                      )}
-                    >
-                      —
-                    </td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
+          <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">流年 / 流月 / 流日 / 流时</h3>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {transitItems.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-[14px] border border-stone-300 bg-stone-50/70 px-4 py-4 text-center dark:border-white/15 dark:bg-white/[0.03]"
+              >
+                <div className="text-xs text-stone-500 dark:text-stone-400">{item.label}</div>
+                <div className="mt-2 text-lg font-semibold text-stone-900 dark:text-stone-100">{item.value}</div>
+              </div>
+            ))}
           </div>
         </section>
 
