@@ -3,10 +3,10 @@
  * 系统位置：features/chart/ChartPreviewSection.tsx
  * 上游依赖：domain/bazi, domain/config, shared/constants/paipan, shared/ui/SectionCard
  * 下游影响：后续真实结果页、本命盘展示、流运展示
- * 约束：先做专业表格式结构，真实计算接入前不过度展示未实现区块。
+ * 约束：保留主盘 + 下半区专业模块，但避免大段空占位破坏观感。
  */
 
-import type { BaziChartResult, PillarDetail } from '../../domain/bazi/types.ts'
+import type { AuxiliaryStar, BaziChartResult, PillarDetail } from '../../domain/bazi/types.ts'
 import type { PaipanRuleConfig } from '../../domain/config/types.ts'
 import {
   DAY_BOUNDARY_LABELS,
@@ -73,88 +73,92 @@ const rows = [
     label: '空亡',
     render: (pillar: PillarDetail) => (pillar.emptyBranches.length ? pillar.emptyBranches.join(' / ') : '—'),
   },
-  {
-    key: 'status',
-    label: '状态',
-    render: (pillar: PillarDetail) =>
-      pillar.status === 'known' ? '已就绪' : pillar.status === 'unknown' ? '未知时辰' : '未排盘',
-    subtle: true,
-  },
 ]
 
 export function ChartPreviewSection({ result, config }: ChartPreviewSectionProps) {
   const pillars = pillarOrder.map((key) => result.pillars[key])
 
   return (
-    <SectionCard title="排盘结果" description="参考传统排盘软件：横向看四柱，纵向看字段，减少花哨卡片感。">
-      <div className="space-y-4">
-        <div className="overflow-hidden rounded-[20px] border-2 border-stone-300 bg-white shadow-[0_12px_30px_-24px_rgba(68,53,35,0.45)] dark:border-white/15 dark:bg-stone-950">
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse text-center">
-              <thead>
-                <tr className="bg-stone-100 dark:bg-white/[0.04]">
-                  <th className="min-w-28 border-b-2 border-r border-stone-300 px-4 py-3 text-sm font-semibold text-stone-500 dark:border-white/15 dark:text-stone-400">
-                    项目
-                  </th>
-                  {pillars.map((pillar) => (
-                    <th
-                      key={`${pillar.key}-column`}
-                      className={cn(
-                        'min-w-36 border-b-2 border-stone-300 px-5 py-3 text-base font-semibold text-stone-950 dark:border-white/15 dark:text-stone-50',
-                        pillar.key !== 'hour' && 'border-r border-stone-300 dark:border-white/15',
-                        pillar.key === 'day' && 'bg-amber-100/70 dark:bg-amber-500/12',
-                      )}
-                    >
-                      <div className="flex flex-col items-center gap-1">
-                        <span>{pillar.label}</span>
-                        {pillar.key === 'day' ? (
-                          <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-medium tracking-[0.12em] text-white dark:bg-amber-400 dark:text-stone-950">
-                            日主
-                          </span>
-                        ) : null}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, rowIndex) => (
-                  <tr key={row.key} className={rowIndex % 2 === 0 ? 'bg-white dark:bg-stone-950' : 'bg-stone-50/60 dark:bg-white/[0.02]'}>
-                    <th className="border-b border-r border-stone-300 px-4 py-3 text-sm font-medium text-stone-500 dark:border-white/15 dark:text-stone-400">
-                      {row.label}
+    <div className="space-y-6">
+      <SectionCard title="排盘结果" description="参考传统排盘软件：上面是四柱主盘，下面接专业信息区。">
+        <div className="space-y-5">
+          <div className="overflow-hidden rounded-[20px] border border-stone-300 bg-white shadow-[0_12px_30px_-24px_rgba(68,53,35,0.45)] dark:border-white/15 dark:bg-stone-950">
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-collapse text-center">
+                <thead>
+                  <tr className="bg-stone-100 dark:bg-white/[0.04]">
+                    <th className="min-w-28 border-b border-r border-stone-300 px-4 py-3 text-sm font-semibold text-stone-500 dark:border-white/15 dark:text-stone-400">
+                      项目
                     </th>
                     {pillars.map((pillar) => (
-                      <td
-                        key={`${pillar.key}-${row.key}`}
+                      <th
+                        key={`${pillar.key}-column`}
                         className={cn(
-                          'border-b border-stone-200 px-4 py-3 text-sm text-stone-700 dark:border-white/10 dark:text-stone-200',
+                          'min-w-36 border-b border-stone-300 px-5 py-3 text-base font-semibold text-stone-950 dark:border-white/15 dark:text-stone-50',
                           pillar.key !== 'hour' && 'border-r border-stone-300 dark:border-white/15',
-                          row.emphasis === 'stem' &&
-                            'py-5 text-[2rem] font-semibold leading-none tracking-[0.2em] text-stone-950 dark:text-stone-50',
-                          row.emphasis === 'branch' &&
-                            'py-5 text-[2rem] font-semibold leading-none tracking-[0.2em] text-stone-950 dark:text-stone-50',
-                          row.multiline && 'leading-7',
-                          row.subtle && 'text-xs text-stone-500 dark:text-stone-400',
-                          pillar.key === 'day' && 'bg-amber-50/40 dark:bg-amber-500/[0.06]',
+                          pillar.key === 'day' && 'bg-amber-100/70 dark:bg-amber-500/12',
                         )}
                       >
-                        {row.render(pillar)}
-                      </td>
+                        <div className="flex flex-col items-center gap-1">
+                          <span>{pillar.label}</span>
+                          {pillar.key === 'day' ? (
+                            <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-medium tracking-[0.12em] text-white dark:bg-amber-400 dark:text-stone-950">
+                              日主
+                            </span>
+                          ) : null}
+                        </div>
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rows.map((row, rowIndex) => (
+                    <tr
+                      key={row.key}
+                      className={rowIndex % 2 === 0 ? 'bg-white dark:bg-stone-950' : 'bg-stone-50/60 dark:bg-white/[0.02]'}
+                    >
+                      <th className="border-b border-r border-stone-300 px-4 py-3 text-sm font-medium text-stone-500 dark:border-white/15 dark:text-stone-400">
+                        {row.label}
+                      </th>
+                      {pillars.map((pillar) => (
+                        <td
+                          key={`${pillar.key}-${row.key}`}
+                          className={cn(
+                            'border-b border-stone-200 px-4 py-3 text-sm text-stone-700 dark:border-white/10 dark:text-stone-200',
+                            pillar.key !== 'hour' && 'border-r border-stone-300 dark:border-white/15',
+                            row.emphasis === 'stem' &&
+                              'py-5 text-[2rem] font-semibold leading-none tracking-[0.2em] text-stone-950 dark:text-stone-50',
+                            row.emphasis === 'branch' &&
+                              'py-5 text-[2rem] font-semibold leading-none tracking-[0.2em] text-stone-950 dark:text-stone-50',
+                            row.multiline && 'leading-7',
+                            pillar.key === 'day' && 'bg-amber-50/40 dark:bg-amber-500/[0.06]',
+                          )}
+                        >
+                          {row.render(pillar)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 text-xs text-stone-600 dark:text-stone-300">
+            <MetaPill>{YEAR_BOUNDARY_LABELS[config.yearBoundaryRule]}</MetaPill>
+            <MetaPill>{MONTH_BOUNDARY_LABELS[config.monthBoundaryRule]}</MetaPill>
+            <MetaPill>{DAY_BOUNDARY_LABELS[config.dayBoundaryRule]}</MetaPill>
           </div>
         </div>
+      </SectionCard>
 
-        <div className="flex flex-wrap gap-2 text-xs text-stone-600 dark:text-stone-300">
-          <MetaPill>{YEAR_BOUNDARY_LABELS[config.yearBoundaryRule]}</MetaPill>
-          <MetaPill>{MONTH_BOUNDARY_LABELS[config.monthBoundaryRule]}</MetaPill>
-          <MetaPill>{DAY_BOUNDARY_LABELS[config.dayBoundaryRule]}</MetaPill>
-        </div>
+      <div className="grid gap-4 xl:grid-cols-2">
+        <InfoPanel title="五行分析" items={buildSimpleList(['木', '火', '土', '金', '水'])} />
+        <InfoPanel title="十神分析" items={buildSimpleList(['比肩', '劫财', '食神', '伤官'])} />
+        <InfoPanel title="排盘信息" items={buildConfigList(config)} />
+        <InfoPanel title="大运信息" items={buildStarList(result.professionPanel.primaryStars)} />
       </div>
-    </SectionCard>
+    </div>
   )
 }
 
@@ -164,6 +168,39 @@ function MetaPill({ children }: { children: string }) {
       {children}
     </span>
   )
+}
+
+function InfoPanel({ title, items }: { title: string; items: Array<{ label: string; value: string }> }) {
+  return (
+    <section className="rounded-[18px] border border-stone-300 bg-white p-5 shadow-[0_10px_26px_-24px_rgba(68,53,35,0.4)] dark:border-white/12 dark:bg-stone-950">
+      <h3 className="text-base font-semibold text-stone-950 dark:text-stone-50">{title}</h3>
+      <div className="mt-4 space-y-3">
+        {items.map((item) => (
+          <div key={item.label} className="flex items-center justify-between gap-4 border-b border-stone-200 pb-2 text-sm last:border-b-0 last:pb-0 dark:border-white/10">
+            <span className="text-stone-500 dark:text-stone-400">{item.label}</span>
+            <span className="font-medium text-stone-800 dark:text-stone-200">{item.value}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function buildSimpleList(labels: string[]) {
+  return labels.map((label) => ({ label, value: '—' }))
+}
+
+function buildConfigList(config: PaipanRuleConfig) {
+  return [
+    { label: '年界', value: YEAR_BOUNDARY_LABELS[config.yearBoundaryRule] },
+    { label: '月界', value: MONTH_BOUNDARY_LABELS[config.monthBoundaryRule] },
+    { label: '日界', value: DAY_BOUNDARY_LABELS[config.dayBoundaryRule] },
+    { label: '真太阳时', value: config.trueSolarTimeEnabled ? '开启' : '关闭' },
+  ]
+}
+
+function buildStarList(items: AuxiliaryStar[]) {
+  return items.map((item) => ({ label: item.name, value: item.value ?? '—' }))
 }
 
 function formatHiddenStems(pillar: PillarDetail) {
